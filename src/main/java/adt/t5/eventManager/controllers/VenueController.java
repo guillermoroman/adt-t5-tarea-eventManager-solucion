@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,6 +87,7 @@ public class VenueController {
         return venueService.findAllByName(name);
     }
 
+    /*
     @PostMapping(value = "/{id}/uploadImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Venue> uploadImageForVenue(@PathVariable Long id, @RequestParam("file") MultipartFile file){
 
@@ -131,6 +133,39 @@ public class VenueController {
             return ResponseEntity.internalServerError().build();
         }
 
+    }
+
+    */
+    @PostMapping(value = "/{id}/uploadImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImageForVenue(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+
+        // Definir carpeta en la raíz del proyecto
+        String uploadDir = System.getProperty("user.dir") + File.separator + "uploads";
+
+        // Crear la carpeta si no existe
+        File directory = new File(uploadDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Obtener el nombre original del archivo
+        String fileName = file.getOriginalFilename();
+
+        // Posibles comprobaciones o asignación de un nombre único
+        File destinationFile = new File(directory, fileName);
+
+        // Guardar el archivo en el sistema
+        try {
+            file.transferTo(destinationFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir el archivo: " + e.getMessage());
+        }
+
+        // Respuesta OK
+        return ResponseEntity.ok("Archivo subido con éxito en: "
+                + uploadDir + File.separator + fileName);
     }
 
 
